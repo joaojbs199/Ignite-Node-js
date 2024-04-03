@@ -1,7 +1,7 @@
 
 import fs from 'node:fs/promises'
 
-const databasePath = new URL('../db.json', import.meta.url);
+const databasePath = new URL('db.json', import.meta.url);
 
 export class Database {
   #database = {};
@@ -56,17 +56,30 @@ export class Database {
     if (rowIndex > -1) {
       this.#database[table].splice(rowIndex, 1)
       this.#persist();
+
+      return {
+        deletedId: id,
+      };
     }
+
+    return null;
   }
 
-  update(table, id, data) {
+  update(table, id, updates) {
     const rowIndex = this.#database[table].findIndex((row) => {
-      return row.id === id
+      return row.id === id;
     })
 
     if (rowIndex > -1) {
-      this.#database[table][rowIndex] = { id, ...data };
+      const currentData = this.#database[table][rowIndex];
+      this.#database[table][rowIndex] = { ...currentData, ...updates };
       this.#persist();
+
+      return {
+        updatedId: id,
+      };
     }
+
+    return null;
   }
 }
