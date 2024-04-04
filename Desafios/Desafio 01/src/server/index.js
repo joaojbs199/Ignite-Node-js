@@ -5,6 +5,7 @@ import { extractQueryParams } from '../utils/extract-query-params.js';
 
 const server  = http.createServer(async (req, res) => {
   const { method, url } = req;
+  res.setHeader('content-type', 'application/json')
 
   await json(req, res);
 
