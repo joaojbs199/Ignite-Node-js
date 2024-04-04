@@ -3,7 +3,7 @@ import { Database } from '../database/index.js';
 import { createResponseObject } from '../utils/create-response-object.js'
 import { buildRoutePath } from '../utils/build-route-path.js';
 import { createValidator, updateValidator } from '../utils/validators.js';
-import { createTempFile } from '../utils/create-temp-file.js';
+import { createTempCSVFile } from '../utils/create-temp-file.js';
 import { parse } from 'csv-parse';
 import fs from 'node:fs'
 
@@ -151,15 +151,15 @@ export const routeDefinition = [
     method: 'POST',
     path: buildRoutePath('/tasks/upload'),
     handler: async (req, res) => {
-      const tempFilename = await createTempFile(req, res)
+      const file = await createTempCSVFile(req, res)
 
-      if (!tempFilename) {
+      if (!file.name) {
         return res.writeHead(500).end(JSON.stringify(
-          createResponseObject(null, 'Erro no upload do arquivo.')
+          createResponseObject(null, file.errorMessage)
         ))
       }
 
-      const parser = fs.createReadStream(tempFilename).pipe(
+      const parser = fs.createReadStream(file.name).pipe(
         parse({ fromLine: 2 })
       );
 
@@ -195,7 +195,7 @@ export const routeDefinition = [
         insertedIds.push(result.insertedId);
       }
 
-      fs.unlinkSync(tempFilename);
+      fs.unlinkSync(file.name);
 
       return res.writeHead(201).end(JSON.stringify(
         createResponseObject(insertedIds, 'Tasks importadas com sucesso!')

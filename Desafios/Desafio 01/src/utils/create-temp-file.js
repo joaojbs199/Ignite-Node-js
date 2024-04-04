@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 
-export const createTempFile = async (req, res) => {
+export const createTempCSVFile = async (req, res) => {
   const buffers = [];
 
   for await (const chunk of req) {
@@ -19,13 +19,27 @@ export const createTempFile = async (req, res) => {
 
     if (filenameMatch) {
       const filename = filenameMatch[1];
+
+      if (!filename.toLowerCase().endsWith('.csv')) {
+        return {
+          name: null,
+          errorMessage: 'Apenas arquivos com extensão .csv são permitidos.'
+        };
+      }
+
       const fileData = part.split('\r\n\r\n')[1].trim();
 
       fs.writeFileSync(filename, fileData, { encoding: 'utf8' });
 
-      return filename;
+      return {
+        name: filename,
+        errorMessage: ''
+      };
     } else {
-      return null;
+      return {
+        name: null,
+        errorMessage: 'Erro ao no upload arquivo.'
+      };
     }
   }
 }
