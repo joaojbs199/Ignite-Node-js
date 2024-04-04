@@ -3,6 +3,9 @@ import { Database } from '../database/index.js';
 import { createResponseObject } from '../utils/create-response-object.js'
 import { buildRoutePath } from '../utils/build-route-path.js';
 import { createValidator, updateValidator } from '../utils/validators.js';
+import { createTempFile } from '../utils/create-temp-file.js';
+import { parse } from 'csv-parse';
+import fs from 'node:fs'
 
 const database = new Database()
 
@@ -143,5 +146,60 @@ export const routeDefinition = [
         createResponseObject(result.updatedId, 'Task concluída com sucesso!')
       ));
     }
-  }
+  },
+  {
+    method: 'POST',
+    path: buildRoutePath('/tasks/upload'),
+    handler: async (req, res) => {
+      const tempFilename = await createTempFile(req, res)
+
+      if (!tempFilename) {
+        return res.writeHead(500).end(JSON.stringify(
+          createResponseObject(null, 'Erro no upload do arquivo.')
+        ))
+      }
+
+      const parser = fs.createReadStream(tempFilename).pipe(
+        parse({ fromLine: 2 })
+      );
+
+      const insertedIds = [];
+    
+      for await (const record of parser) {
+        const data = {
+          title: record[0],
+          description: record[1],
+        }
+    
+        const validationResult = createValidator(
+          ['title', 'description'],
+          data
+        );
+  
+        if (validationResult) {
+          return res.writeHead(400).end(JSON.stringify(
+            createResponseObject(null, validationResult)
+          ));
+        }
+  
+        const task = {
+          id: randomUUID(),
+          title: data.title,
+          description: data.description,
+          completed_at: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }
+  
+        const result = database.insert('tasks', task);
+        insertedIds.push(result.insertedId);
+      }
+
+      fs.unlinkSync(tempFilename);
+
+      return res.writeHead(201).end(JSON.stringify(
+        createResponseObject(insertedIds, 'Tasks importadas com sucesso!')
+      ));
+    }
+  },
 ]
