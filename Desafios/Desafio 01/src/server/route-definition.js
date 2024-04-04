@@ -2,25 +2,18 @@ import { randomUUID } from 'node:crypto';
 import { Database } from '../database/index.js';
 import { createResponseObject } from '../utils/create-response-object.js'
 import { buildRoutePath } from '../utils/build-route-path.js';
-
-const routes = {
-  tasks: '/tasks'
-};
-
-const tables = {
-  tasks: 'tasks'
-}
+import { createValidator, updateValidator } from '../utils/validators.js';
 
 const database = new Database()
 
 export const routeDefinition = [
   {
     method: 'GET',
-    path: buildRoutePath(routes.tasks),
+    path: buildRoutePath('/tasks'),
     handler: (req, res) => {
       const { search } = req.query;
 
-      const tasks = database.select(tables.tasks, search ? {
+      const tasks = database.select('tasks', search ? {
         title: search,
         description: search,
       } : null);
@@ -34,9 +27,21 @@ export const routeDefinition = [
   },
   {
     method: 'POST',
-    path: buildRoutePath(routes.tasks),
+    path: buildRoutePath('/tasks'),
     handler: (req, res) => {
       const { title, description } = req.body
+
+      const validationResult = createValidator(
+        ['title', 'description'],
+        req.body
+      );
+
+      if (validationResult) {
+        return res.writeHead(400).end(JSON.stringify(
+          createResponseObject(null, validationResult)
+        ));
+      }
+
       const task = {
         id: randomUUID(),
         title,
@@ -46,7 +51,7 @@ export const routeDefinition = [
         updated_at: new Date().toISOString(),
       }
 
-      const result = database.insert(tables.tasks, task);
+      const result = database.insert('tasks', task);
 
       return res.writeHead(201).end(JSON.stringify(
         createResponseObject(result.insertedId, 'Task criada com sucesso!')
@@ -55,11 +60,11 @@ export const routeDefinition = [
   },
   {
     method: 'DELETE',
-    path: buildRoutePath(`${routes.tasks}/:id`),
+    path: buildRoutePath('/tasks/:id'),
     handler: (req, res) => {
       const { id } = req.params;
 
-      const result = database.delete(tables.tasks, id);
+      const result = database.delete('tasks', id);
 
       if (!result) {
         return res.writeHead(404).end(JSON.stringify(
@@ -74,21 +79,68 @@ export const routeDefinition = [
   },
   {
     method: 'PUT',
-    path: buildRoutePath(`${routes.tasks}/:id`),
+    path: buildRoutePath('/tasks/:id'),
     handler: (req, res) => {
       const { id } = req.params;
-      const updates = req.body
+      const updates = req.body;
 
-      const result = database.update(tables.tasks, id, updates);
+      const validationResult = updateValidator(
+        ['title', 'description'],
+        req.body
+      );
 
-      if (!result) {
+      if (validationResult) {
+        return res.writeHead(400).end(JSON.stringify(
+          createResponseObject(null, validationResult)
+        ));
+      }
+
+      const [task] = database.select('tasks', { id });
+
+      if (!task) {
         return res.writeHead(404).end(JSON.stringify(
           createResponseObject(null, 'Task não encontrada.')
         ));
       }
 
+      if (task.completed_at) {
+        return res.writeHead(409).end(JSON.stringify(
+          createResponseObject(null, 'Task já foi concluída.')
+        ));
+      }
+
+      const result = database.update('tasks', id, updates);
+
       res.writeHead(200).end(JSON.stringify(
         createResponseObject(result.updatedId, 'Task atualizada com sucesso!')
+      ));
+    }
+  },
+  {
+    method: 'PATCH',
+    path: buildRoutePath('/tasks/:id/complete'),
+    handler: (req, res) => {
+      const { id } = req.params;
+      const updates = { completed_at: new Date().toISOString() }
+
+      const [task] = database.select('tasks', { id });
+
+      if (!task) {
+        return res.writeHead(404).end(JSON.stringify(
+          createResponseObject(null, 'Task não encontrada.')
+        ));
+      }
+
+      if (task.completed_at) {
+        return res.writeHead(409).end(JSON.stringify(
+          createResponseObject(null, 'Task já foi concluída.')
+        ));
+      }
+
+      const result = database.update('tasks', id, updates);
+
+      res.writeHead(200).end(JSON.stringify(
+        createResponseObject(result.updatedId, 'Task concluída com sucesso!')
       ));
     }
   }
