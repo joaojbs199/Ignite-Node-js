@@ -25,6 +25,17 @@ Este projeto é uma API desenvolvida em Node.js para o gerenciamento de tasks. P
   
 - **PATCH** - `/tasks/:id/complete`: Rota para completar uma task. Retorna uma mensagem de sucesso e o ID da task concluída ou uma mensagem de erro se a task não houver sido encontrada ou já tiver sido concluída.
 
+
+## Exemplo de retorno padrão da API:
+#### Parâmetro `data` pode ser `string`, `string[]` ou `null`.
+```json
+{
+  "data": "cdcc4f93-bbab-4a62-b55e-b86395443e09",
+  "message": "Task criada com sucesso!"
+}
+```
+
+
 ## Outros Detalhes
 
 - **Verificação de Arquivo CSV:** Caso seja enviado um arquivo que não esteja no formato CSV, a API retornará um erro.
