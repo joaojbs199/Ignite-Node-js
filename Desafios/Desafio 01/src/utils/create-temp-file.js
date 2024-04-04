@@ -21,7 +21,7 @@ export const createTempFile = async (req, res) => {
       const filename = filenameMatch[1];
       const fileData = part.split('\r\n\r\n')[1].trim();
 
-      fs.writeFileSync(filename, fileData);
+      fs.writeFileSync(filename, fileData, { encoding: 'utf8' });
 
       return filename;
     } else {
