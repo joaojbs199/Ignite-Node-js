@@ -1,6 +1,6 @@
-import { prisma } from '@/lib/prisma';
-import { PrismaUsersRepository } from '@/repositories/prisma-users-repository';
+import { UsersRepository } from '@/repositories/users-repository';
 import { hash } from 'bcryptjs';
+import { UserAlreadyExistsError } from '@/use-cases/errors/user-already-exists-error';
 
 interface RegisterUseCaseParams {
   name: string;
@@ -8,25 +8,24 @@ interface RegisterUseCaseParams {
   password: string;
 }
 
-export const registerUseCase = async ({ name, email, password }: RegisterUseCaseParams) => {
-  // eslint-disable-next-line camelcase
-  const password_hash = await hash(password, 10);
+export class RegisterUseCase {
+  constructor(private readonly usersRepository: UsersRepository) {}
 
-  const hasUser = await prisma.user.findUnique({
-    where: {
-      email,
-    },
-  });
-
-  if (hasUser) {
-    throw new Error('Email already exists.');
-  }
-
-  const prismaUsersRepository = new PrismaUsersRepository();
-  await prismaUsersRepository.create({
-    name,
-    email,
+  async handle({ name, email, password }: RegisterUseCaseParams) {
     // eslint-disable-next-line camelcase
-    password_hash,
-  });
-};
+    const password_hash = await hash(password, 10);
+
+    const hasUser = await this.usersRepository.findByEmail(email);
+
+    if (hasUser) {
+      throw new UserAlreadyExistsError();
+    }
+
+    await this.usersRepository.create({
+      name,
+      email,
+      // eslint-disable-next-line camelcase
+      password_hash,
+    });
+  }
+}
