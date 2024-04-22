@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { RegisterUseCase } from './register';
+import { RegisterUseCase } from '@/use-cases/register';
 import { compare } from 'bcryptjs';
 import { InMemoryUsersRepository } from '@/repositories/in-memory/in-memory-users-repository';
 import { UserAlreadyExistsError } from './errors/user-already-exists-error';
@@ -7,10 +7,10 @@ import { UserAlreadyExistsError } from './errors/user-already-exists-error';
 describe('Register use case', () => {
   it('should hash user password upon registration', async () => {
     const usersRepository = new InMemoryUsersRepository();
-    const registerUseCase = new RegisterUseCase(usersRepository);
+    const sut = new RegisterUseCase(usersRepository);
 
     const password = '123abc';
-    const { user } = await registerUseCase.handle({
+    const { user } = await sut.handle({
       name: 'John Doe',
       email: 'john.doe@test.com',
       password,
@@ -23,19 +23,19 @@ describe('Register use case', () => {
 
   it('should not be able to register with same email twice', async () => {
     const usersRepository = new InMemoryUsersRepository();
-    const registerUseCase = new RegisterUseCase(usersRepository);
+    const sut = new RegisterUseCase(usersRepository);
 
     const email = 'john.doe@test.com';
     const password = '123abc';
 
-    await registerUseCase.handle({
+    await sut.handle({
       name: 'John Doe',
       email,
       password,
     });
 
     await expect(() =>
-      registerUseCase.handle({
+      sut.handle({
         name: 'John Doe',
         email,
         password,
@@ -45,9 +45,9 @@ describe('Register use case', () => {
 
   it('should be able to register', async () => {
     const usersRepository = new InMemoryUsersRepository();
-    const registerUseCase = new RegisterUseCase(usersRepository);
+    const sut = new RegisterUseCase(usersRepository);
 
-    const { user } = await registerUseCase.handle({
+    const { user } = await sut.handle({
       name: 'John Doe',
       email: 'john.doe@test.com',
       password: '123abc',

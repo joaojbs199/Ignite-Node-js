@@ -1,4 +1,4 @@
-import { UsersRepository } from '@/repositories/users-repository';
+import { IUsersRepository } from '@/repositories/users-repository';
 import { hash } from 'bcryptjs';
 import { UserAlreadyExistsError } from '@/use-cases/errors/user-already-exists-error';
 import type { User } from '@prisma/client';
@@ -14,7 +14,7 @@ interface RegisterUseCaseResponse {
 }
 
 export class RegisterUseCase {
-  constructor(private readonly usersRepository: UsersRepository) {}
+  constructor(private readonly usersRepository: IUsersRepository) {}
 
   async handle({ name, email, password }: RegisterUseCaseParams): Promise<RegisterUseCaseResponse> {
     // eslint-disable-next-line camelcase
