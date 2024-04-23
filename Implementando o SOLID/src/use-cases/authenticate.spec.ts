@@ -1,15 +1,20 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { hash } from 'bcryptjs';
 import { InMemoryUsersRepository } from '@/repositories/in-memory/in-memory-users-repository';
 import { AuthenticateUseCase } from '@/use-cases/authenticate';
 import { randomUUID } from 'crypto';
 import { InvalidCredentialsError } from '@/use-cases/errors/invalid-credentials-error';
 
-describe('Authenticate use case', () => {
-  it('should be able to authenticate', async () => {
-    const usersRepository = new InMemoryUsersRepository();
-    const sut = new AuthenticateUseCase(usersRepository);
+let usersRepository: InMemoryUsersRepository;
+let sut: AuthenticateUseCase;
 
+describe('Authenticate use case', () => {
+  beforeEach(() => {
+    usersRepository = new InMemoryUsersRepository();
+    sut = new AuthenticateUseCase(usersRepository);
+  });
+
+  it('should be able to authenticate', async () => {
     const password = '123abc';
     // eslint-disable-next-line camelcase
     const password_hash = await hash(password, 10);
@@ -36,9 +41,6 @@ describe('Authenticate use case', () => {
   });
 
   it('should not be able to authenticate with wrong email', async () => {
-    const usersRepository = new InMemoryUsersRepository();
-    const sut = new AuthenticateUseCase(usersRepository);
-
     const password = '123abc';
 
     await expect(() =>
@@ -50,9 +52,6 @@ describe('Authenticate use case', () => {
   });
 
   it('should not be able to authenticate with wrong password', async () => {
-    const usersRepository = new InMemoryUsersRepository();
-    const sut = new AuthenticateUseCase(usersRepository);
-
     const password = '123abc';
     // eslint-disable-next-line camelcase
     const password_hash = await hash(password, 10);
