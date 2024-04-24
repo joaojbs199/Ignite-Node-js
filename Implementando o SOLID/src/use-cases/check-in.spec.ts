@@ -26,8 +26,8 @@ describe('Check In use case', () => {
       title: 'Academia teste',
       description: 'Academia para testes',
       phone: '33999999999',
-      latitude: -44.1234567,
-      longitude: -22.1234567,
+      latitude: -20.3910775,
+      longitude: -43.5037591,
     });
   });
 
@@ -39,8 +39,8 @@ describe('Check In use case', () => {
     const { checkIn } = await sut.handle({
       userId: randomUUID(),
       gymId,
-      userLatitude: -44.1234567,
-      userLongitude: -22.1234567,
+      userLatitude: -20.3910775,
+      userLongitude: -43.5037591,
     });
 
     expect(checkIn.id).toEqual(expect.any(String));
@@ -54,16 +54,16 @@ describe('Check In use case', () => {
     await sut.handle({
       userId,
       gymId,
-      userLatitude: -44.1234567,
-      userLongitude: -22.1234567,
+      userLatitude: -20.3910775,
+      userLongitude: -43.5037591,
     });
 
     await expect(() =>
       sut.handle({
         userId,
         gymId,
-        userLatitude: -44.1234567,
-        userLongitude: -22.1234567,
+        userLatitude: -20.3910775,
+        userLongitude: -43.5037591,
       }),
     ).rejects.toBeInstanceOf(MaxNumberOfCheckInsError);
   });
@@ -76,8 +76,8 @@ describe('Check In use case', () => {
     await sut.handle({
       userId,
       gymId,
-      userLatitude: -44.1234567,
-      userLongitude: -22.1234567,
+      userLatitude: -20.3910775,
+      userLongitude: -43.5037591,
     });
 
     vi.setSystemTime(new Date(2022, 0, 21, 8, 0, 0));
@@ -85,8 +85,8 @@ describe('Check In use case', () => {
     const { checkIn } = await sut.handle({
       userId,
       gymId,
-      userLatitude: -44.1234567,
-      userLongitude: -22.1234567,
+      userLatitude: -20.3910775,
+      userLongitude: -43.5037591,
     });
 
     expect(checkIn.id).toEqual(expect.any(String));
