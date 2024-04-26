@@ -1,0 +1,35 @@
+name: Run E2E Tests
+
+on:
+  pull_request:
+    branches: ['master']
+
+jobs:
+  run-e2e-tests:
+    name: Run E2E Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: bitnami/postgresql
+        ports: 
+          - 5432:5432
+        env:
+          POSTGRESQL_USERNAME: joao
+          POSTGRESQL_PASSWORD: dockerpg123q
+          POSTGRESQL_DATABASE: implSolid
+          
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - run: npm ci
+
+      - run: npm run test:e2e
+        env:
+          JWT_SECRET: nbgrb1238o1o23byu1rv23b
+          DATABASE_URL: postgresql://joao:dockerpg123q@localhost:5432/implSolid?schema=public
