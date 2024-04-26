@@ -5,15 +5,15 @@ interface IGetUserMetricsUseCaseParams {
 }
 
 interface IGetUserMetricsUseCaseResponse {
-  chekInsCount: number;
+  checkInsCount: number;
 }
 
 export class GetUserMetricsUseCase {
   constructor(private checkInsRepository: ICheckInsRepository) {}
 
   async handle({ userId }: IGetUserMetricsUseCaseParams): Promise<IGetUserMetricsUseCaseResponse> {
-    const chekInsCount = await this.checkInsRepository.countByUserId(userId);
+    const checkInsCount = await this.checkInsRepository.countByUserId(userId);
 
-    return { chekInsCount };
+    return { checkInsCount };
   }
 }

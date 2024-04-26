@@ -4,9 +4,9 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 export const metrics = async (req: FastifyRequest, reply: FastifyReply) => {
   const getUserMetricsUseCase = makeGetUserMetricsUseCase();
 
-  const { chekInsCount } = await getUserMetricsUseCase.handle({
+  const { checkInsCount } = await getUserMetricsUseCase.handle({
     userId: req.user.sub,
   });
 
-  return reply.status(201).send({ chekInsCount });
+  return reply.status(200).send({ checkInsCount });
 };
