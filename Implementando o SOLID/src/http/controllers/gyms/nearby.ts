@@ -4,10 +4,10 @@ import { z } from 'zod';
 
 export const nearby = async (req: FastifyRequest, reply: FastifyReply) => {
   const searchNearbyGymsSchema = z.object({
-    latitude: z.number().refine((value) => {
+    latitude: z.coerce.number().refine((value) => {
       return Math.abs(value) <= 90;
     }),
-    longitude: z.number().refine((value) => {
+    longitude: z.coerce.number().refine((value) => {
       return Math.abs(value) <= 180;
     }),
   });
@@ -21,5 +21,5 @@ export const nearby = async (req: FastifyRequest, reply: FastifyReply) => {
     userLongitude: longitude,
   });
 
-  return reply.status(201).send({ gyms });
+  return reply.status(200).send({ gyms });
 };
